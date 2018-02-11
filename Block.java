@@ -4,5 +4,5 @@ public class Block {
       public int ID;
       public Block prevBlock;
       public LinkedList<Txn> txnList;
-      public Map<Node, int> balance;
+      public Map<Node, Integer> balance;
 }
