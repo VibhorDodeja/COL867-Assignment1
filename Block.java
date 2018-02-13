@@ -3,6 +3,11 @@ import java.util.*;
 public class Block {
       public int ID;
       public Block prevBlock;
-      public LinkedList<Txn> txnList;
-      public Map<Node, Integer> balance;
+      public ArrayList<Txn> txnList;
+
+      Block(int id) {
+            ID = id;
+            prevBlock = null;
+            txnList = new ArrayList<Txn>();
+      }
 }
