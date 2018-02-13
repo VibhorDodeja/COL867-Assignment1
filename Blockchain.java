@@ -3,7 +3,7 @@ import java.util.*;
 public class Blockchain {
 
 	private BlockchainUnit genesis;
-	private HashMap<Integer, BlockchainUnit> blockMap;
+	public HashMap<Integer, BlockchainUnit> blockMap;
 	private ArrayList<BlockchainUnit> sideBlocks;
 
 	public Blockchain() {

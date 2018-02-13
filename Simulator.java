@@ -1,13 +1,14 @@
 // Simulator.java
-import java.util.*;
+import java.io.*;
 import java.lang.Math.*;
+import java.util.*;
 
 public class Simulator {
 	private static Network network;
 	public static int TIME;                   // 1 unit = 1 ms;
 
 	private static int txnCount;
-      private static int blkCount;
+	private static int blkCount;
 	private static int maxTxn;
 	public static int minLatency;
 
@@ -53,8 +54,8 @@ public class Simulator {
 		}
 
 		// Initialising variables/constants.
-            txnCount = 1;
-            blkCount = 1;
+		txnCount = 1;
+		blkCount = 1;
 		maxTxn = 100;
 		minLatency = genIntRandom(10,500);
 		int numFast = (int) (fracFast*numPeers);
@@ -65,16 +66,16 @@ public class Simulator {
 
 		// Creating Nodes.
 		for (int i = 0; i < numPeers; i++) {
-			Node tmp = new Node(i, false);
-			if ( i < numFast ) {
+			Node tmp = new Node(i, false, numPeers);
+/*			if ( i < numFast ) {
 				tmp.isFast = true;
-				if ( genIntRandom(1,10) < 9 ) tmp.meanBlkTime = genIntRandom(8*meanTxnTime, 10*meanTxnTime);
-				else tmp.meanBlkTime = genIntRandom(12*meanTxnTime, 15*meanTxnTime);
+				if ( genIntRandom(1,10) < 9 ) tmp.setMeanTime(genIntRandom(8*meanTxnTime*numPeers, 10*meanTxnTime*numPeers));
+				else tmp.setMeanTime(genIntRandom(12*meanTxnTime*numPeers, 15*meanTxnTime*numPeers));
+			} else {
+				if (genIntRandom(1,10) > 9 ) tmp.setMeanTime(genIntRandom(8*meanTxnTime*numPeers, 10*meanTxnTime*numPeers));
+				else tmp.setMeanTime(genIntRandom(12*meanTxnTime*numPeers, 15*meanTxnTime*numPeers));
 			}
-			else {
-				if (genIntRandom(1,10) > 9 ) tmp.meanBlkTime = genIntRandom(8*meanTxnTime, 10*meanTxnTime);
-				else tmp.meanBlkTime = genIntRandom(12*meanTxnTime, 15*meanTxnTime);
-			}
+*/                  tmp.setMeanTime(meanTxnTime);
 			network.addNode(tmp);
 		}
 
@@ -85,7 +86,6 @@ public class Simulator {
 				Node tmp2 = network.getNode((i+j)%numFast);
 				tmp.peerList.add(tmp2);
 				tmp2.peerList.add(tmp);
-
 			}
 		}
 
@@ -108,7 +108,7 @@ public class Simulator {
 			}
 		}
 
-		/* Check peers...
+		/* Check peers... */
             for (int i = 0; i< numPeers; i++) {
                   Node tmp = network.getNode(i);
                   System.out.print("Node "+String.valueOf(tmp.ID)+"; Peers: ");
@@ -118,7 +118,6 @@ public class Simulator {
                   }
                   System.out.print("\n");
             }
-		 */
 
 		while (TIME < simTime*3600*1000) {
 			// Generate a transaction.
@@ -135,24 +134,54 @@ public class Simulator {
 			// If yes, broadcast the block -> Say node A broadcasts at time t, it reaches B by time t', but B was ready to braodcast by time t" (<t'),
 			// then broadcast B's block also.
 
-                  // Since nextBlkTime and lastBlock might get updated in the generation process, saving it before.
-                  ArrayList<Integer> blkTimes = new ArrayList<Integer>();
-                  ArrayList<Block> lastBlocks = new ArrayList<Block>();
+			// Since nextBlkTime and lastBlock might get updated in the generation process, saving it before.
+			ArrayList<Integer> blkTimes = new ArrayList<Integer>();
+			ArrayList<Block> lastBlocks = new ArrayList<Block>();
 
-                  for (int i = 0; i < numPeers; i++ ) {
-                        blkTimes.add(network.getNode(i).nextBlkTime);
-                        lastBlocks.add(network.getNode(i).lastBlock.getBlock());
-                  }
-              	for (int i = 0; i < numPeers; i++ ) {
-                  	if ( blkTimes.get(i) < TIME+delta ) {
-                    		network.getNode(i).generateBlock(blkCount, lastBlocks.get(i), blkTimes.get(i));
-                              blkCount++;
-                        }
-                  }
+			for (int i = 0; i < numPeers; i++ ) {
+				blkTimes.add(network.getNode(i).nextBlkTime);
+				lastBlocks.add(network.getNode(i).lastBlock.getBlock());
+			}
+			for (int i = 0; i < numPeers; i++ ) {
+				//System.out.print( blkTimes.get(i) +"," );
+				//System.out.println( TIME+delta );
+				if ( blkTimes.get(i) < TIME+delta ) {
+					network.getNode(i).generateBlock(blkCount, lastBlocks.get(i), blkTimes.get(i));
+					blkCount++;
+				}
+			}
 
 			network.getNode(a).broadcastTxn(txn, null, TIME);
 			txnCount++;
 			TIME += delta;
 		}
+
+            // Printing output files.
+            for (int i = 0; i < numPeers; i++ ) {
+                  HashMap<Integer,BlockchainUnit> chain = network.getNode(i).chain.blockMap;
+
+                  // Opening file handles
+                  try {
+                        //File tree = new File()
+                        PrintWriter treeOut = new PrintWriter("Outputs/Tree_Node_"+String.valueOf(i)+".txt","UTF-8");
+                        PrintWriter timeOut = new PrintWriter("Outputs/Time_Node_"+String.valueOf(i)+".txt","UTF-8");
+
+                        // Writing Tree to file
+                        for (Map.Entry<Integer,BlockchainUnit> entry : chain.entrySet()) {
+                              int id = entry.getKey();
+                              Block blk = entry.getValue().getBlock();
+                              if ( id == 0 ) continue;
+                              treeOut.println(String.valueOf(blk.prevBlock.ID)+"->"+String.valueOf(id));
+                        }
+
+                        // Writing received times to file
+
+                        // Closing file handles.
+                        treeOut.close();
+                        timeOut.close();
+                  } catch(Exception e) {
+                        e.printStackTrace();
+                  }
+            }
 	}
 }
