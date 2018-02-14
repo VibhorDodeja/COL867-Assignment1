@@ -82,13 +82,12 @@ public class Node {
 
 		int receivedTime = broadcastTime + latency;
 
-		/* DEBUG: Print BLK received. **/
-
+		/* DEBUG: Print BLK received. *
 		if(receivedFrom == null)
 			System.out.println("Node ID: "+String.valueOf(this.ID)+"; Block ID: "+String.valueOf(blk.ID)+"; Parent ID: "+String.valueOf(blk.prevBlock.ID)+"; time "+receivedTime+" generated; numTxns: "+String.valueOf(blk.txnList.size()));
 		else
 			System.out.println("Node ID: "+String.valueOf(this.ID)+" received"+"; time "+receivedTime);
-
+		*/
 
 		// If block already in tree, return
 		if (chain.contains(blk.ID)) {
@@ -155,12 +154,13 @@ public class Node {
 			execTxn(t);
 		}
 
-		/* DEBUG: Print Balances: **/
+		/* DEBUG: Print Balances: *
 		System.out.println(this.ID+" balances:");
 		for(int id : balance.keySet()) {
 			System.out.println(id+" "+balance.get(id));
 		}
 		System.out.println();
+		*/
 	}
 
 	private void execTxn(Txn txn) {

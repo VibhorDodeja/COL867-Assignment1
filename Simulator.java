@@ -41,7 +41,7 @@ public class Simulator {
 		Scanner in = new Scanner(System.in);
 
 		System.out.print("Default config(d) or Manual config(m): ");
-		if ( in.nextLine().equalsIgnoreCase("d") ) {                                                         /* FIXME: DEFAULT VALUES? */
+		if ( in.nextLine().equalsIgnoreCase("d") ) {                                                       
 			fracFast = 0.1f;
 			meanTxnTime = 60*1000;
 			numPeers = 10;
@@ -58,12 +58,15 @@ public class Simulator {
 
 			System.out.print("Please enter the mean interarrival time for Txns (min): ");
 			meanTxnTime = Integer.parseInt(in.nextLine());
+			meanTxnTime *= 60*1000;
 
 			System.out.print("Please enter mean interarrival time for blocks by big miners (min): ");
 			meanBlkTimeBig = Integer.parseInt(in.nextLine());
+			meanBlkTimeBig *= 60*1000;
 
 			System.out.print("Please enter mean interarrival time for blocks by small miners (min): ");
 			meanBlkTimeSmall = Integer.parseInt(in.nextLine());
+			meanBlkTimeSmall *= 60*1000;
 
 			System.out.print("Please enter the simulation time (in hrs): ");
 			simTime = Float.parseFloat(in.nextLine());
@@ -168,7 +171,7 @@ public class Simulator {
 		}
 
 		// Printing output files.
-/*		for (int i = 0; i < numPeers; i++ ) {
+		for (int i = 0; i < numPeers; i++ ) {
 			HashMap<Integer,BlockchainUnit> chain = network.getNode(i).chain.blockMap;
 
 			// Opening file handles
@@ -198,7 +201,7 @@ public class Simulator {
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
-		}*/
+		}
 
 		HashMap<Integer, BlockchainUnit> chain = network.getNode(0).chain.blockMap;
 
