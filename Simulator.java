@@ -1,6 +1,5 @@
 // Simulator.java
 import java.io.*;
-import java.lang.Math.*;
 import java.util.*;
 
 public class Simulator {
@@ -12,6 +11,7 @@ public class Simulator {
 
 	private static int txnCount;
 	private static int blkCount;
+	public static TreeMap<Integer, Integer> blockQ;
 
 	public static int minLatency;
 	public static float fracFast;
@@ -118,7 +118,7 @@ public class Simulator {
 				tmp2.peerList.add(tmp);
 			}
 
-			int numSlowPeers = genIntRandom(0, numPeers - numFast);
+			int numSlowPeers = genIntRandom(0, (int)(0.2*(numPeers - numFast)));
 			for (int j = 0; j < numSlowPeers; j++) {
 				Node tmp2 = network.getNode(genIntRandom(numFast, numPeers-1));
 				tmp.peerList.add(tmp2);
@@ -136,17 +136,16 @@ public class Simulator {
 			}
 			System.out.print("\n");
 		}
-		*/
+		 */
 
+		// Populate Block times:
+		blockQ = new TreeMap<Integer, Integer>();	// nextBlkTime x Node ID
+		for (int i = 0; i < numPeers; i++) {
+			 Node tmp = network.getNode(i);
+			 blockQ.put(tmp.nextBlkTime, i);
+		}
 		System.out.println("Running simulation...");
 		while (TIME < simTime*3600*1000) {
-			// Populate Block times:
-			TreeMap<Integer, Integer> blockQ = new TreeMap<Integer, Integer>();	// nextBlkTime x Node ID
-			for (int i = 0; i < numPeers; i++) {
-				Node tmp = network.getNode(i);
-				blockQ.put(tmp.nextBlkTime, i);
-			}
-
 			// Pop first block
 			TIME = blockQ.firstKey();
 			int genNode = blockQ.get(TIME);
@@ -169,7 +168,7 @@ public class Simulator {
 		}
 
 		// Printing output files.
-		for (int i = 0; i < numPeers; i++ ) {
+/*		for (int i = 0; i < numPeers; i++ ) {
 			HashMap<Integer,BlockchainUnit> chain = network.getNode(i).chain.blockMap;
 
 			// Opening file handles
@@ -199,7 +198,7 @@ public class Simulator {
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 
 		HashMap<Integer, BlockchainUnit> chain = network.getNode(0).chain.blockMap;
 

@@ -82,13 +82,13 @@ public class Node {
 
 		int receivedTime = broadcastTime + latency;
 
-		/* DEBUG: Print BLK received. *
-		System.out.print("Node ID: "+String.valueOf(this.ID)+"; Block ID: "+String.valueOf(blk.ID)+"; Parent ID: "+String.valueOf(blk.prevBlock.ID)+"; time "+receivedTime);
+		/* DEBUG: Print BLK received. **/
+
 		if(receivedFrom == null)
-			System.out.println(" generated; numTxns: "+String.valueOf(blk.txnList.size()));
+			System.out.println("Node ID: "+String.valueOf(this.ID)+"; Block ID: "+String.valueOf(blk.ID)+"; Parent ID: "+String.valueOf(blk.prevBlock.ID)+"; time "+receivedTime+" generated; numTxns: "+String.valueOf(blk.txnList.size()));
 		else
-			System.out.println(" received");
-		*/
+			System.out.println("Node ID: "+String.valueOf(this.ID)+" received"+"; time "+receivedTime);
+
 
 		// If block already in tree, return
 		if (chain.contains(blk.ID)) {
@@ -119,7 +119,9 @@ public class Node {
 					shiftToNewChain(unit);
 				}
 				lastBlock = unit;
+				Simulator.blockQ.remove(nextBlkTime);
 				nextBlkTime = lastBlock.getTime() + ((int)Simulator.genExpRandom(meanBlkTime));
+				Simulator.blockQ.put(nextBlkTime, ID);
 			}
 		}
 
@@ -153,15 +155,12 @@ public class Node {
 			execTxn(t);
 		}
 
-		/* DEBUG: Print Balances: *
-		if(this.ID == 0) {
-			System.out.println("balances:");
-			for(int id : balance.keySet()) {
-				System.out.println(id+" "+balance.get(id));
-			}
-			System.out.println();
+		/* DEBUG: Print Balances: **/
+		System.out.println(this.ID+" balances:");
+		for(int id : balance.keySet()) {
+			System.out.println(id+" "+balance.get(id));
 		}
-		*/
+		System.out.println();
 	}
 
 	private void execTxn(Txn txn) {
@@ -183,14 +182,21 @@ public class Node {
 		Txn coinbase = new Txn(0, null, this, 50, true);
 		blk.addTxn(coinbase);
 
+		HashMap<Integer, Integer> balCopy = new HashMap<>();
+
+		for(int key: balance.keySet()) {
+			balCopy.put(key, balance.get(key));
+		}
+
 		Iterator<Entry<Integer, TxnUnit>> unspentTxns = txnUnspent.entrySet().iterator();
 		while(unspentTxns.hasNext()) {
 			Entry<Integer, TxnUnit> entry = unspentTxns.next();
 			TxnUnit tu = entry.getValue();
-			if(tu.txn.amount <= balance.get(tu.txn.payer.ID) && tu.receivedTime < nextBlkTime) {
-				unspentTxns.remove();
-				txnSpent.put(tu.txn.ID, tu);
+			if(tu.txn.amount <= balCopy.get(tu.txn.payer.ID) && tu.receivedTime < nextBlkTime) {
+				//unspentTxns.remove();
+				//txnSpent.put(tu.txn.ID, tu);
 				blk.addTxn(tu.txn);
+				balCopy.put(tu.txn.payer.ID, balCopy.get(tu.txn.payer.ID) - tu.txn.amount);
 				count++;
 			}
 			if(count == 20)
@@ -200,8 +206,10 @@ public class Node {
 	}
 
 	public void generateTxn(int id, Node rcvr) {
-		Txn txn = new Txn(id, this, rcvr, Simulator.genIntRandom(1,10 /*FIXME: balance.get(this.ID)*/));
-		broadcastTxn(txn, null, nextTxnTime);
+		if (balance.get(ID) > 1) {
+			Txn txn = new Txn(id, this, rcvr, Simulator.genIntRandom(1,balance.get(this.ID)));
+			broadcastTxn(txn, null, nextTxnTime);
+		}
 		nextTxnTime += Simulator.genExpRandom(meanTxnTime);
 	}
 }
