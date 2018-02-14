@@ -5,9 +5,18 @@ public class Block {
       public Block prevBlock;
       public ArrayList<Txn> txnList;
 
-      Block(int id) {
+      public int creationTime;
+      public Node createdBy;
+
+      Block(int id, int creationTime, Node god) {
             ID = id;
             prevBlock = null;
-            txnList = new ArrayList<Txn>();
+            txnList = new ArrayList<>();
+            this.creationTime = creationTime;
+            createdBy = god;
+      }
+
+      public void addTxn(Txn txn) {
+    	  txnList.add(txn);
       }
 }

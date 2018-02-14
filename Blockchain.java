@@ -3,11 +3,11 @@ import java.util.*;
 public class Blockchain {
 
 	private BlockchainUnit genesis;
-	private HashMap<Integer, BlockchainUnit> blockMap;
+	public HashMap<Integer, BlockchainUnit> blockMap;
 	private ArrayList<BlockchainUnit> sideBlocks;
 
 	public Blockchain() {
-		genesis = new BlockchainUnit(new Block(0), 0);
+		genesis = new BlockchainUnit(new Block(0,0,null), 0);
 		sideBlocks = new ArrayList<BlockchainUnit>();
 		blockMap = new HashMap<Integer,BlockchainUnit>();
 		blockMap.put(0, genesis);
